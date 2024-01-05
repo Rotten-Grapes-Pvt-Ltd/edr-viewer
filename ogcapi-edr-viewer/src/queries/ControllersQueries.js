@@ -8,3 +8,11 @@ export const GetCollections = (url) => {
     enabled: !!url,
   });
 };
+
+export const GetLocations = (url) => {
+  return useQuery({
+    queryKey: [url],
+    queryFn: () => getApi(url),
+    enabled: !!url,
+  });
+};
