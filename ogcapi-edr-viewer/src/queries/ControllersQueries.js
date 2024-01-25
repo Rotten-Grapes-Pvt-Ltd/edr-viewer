@@ -16,3 +16,12 @@ export const GetLocations = (url) => {
     enabled: !!url,
   });
 };
+
+export const GetEdrData = (url) => {
+  return useQuery({
+    queryKey: [url],
+    queryFn: () => getApi(url),
+    enabled: !!url,
+  });
+};
+
