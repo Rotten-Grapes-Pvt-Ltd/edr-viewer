@@ -19,6 +19,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 import { EditControl } from "react-leaflet-draw";
 import Select from "react-select";
+import { toast } from "react-toastify";
 
 export default function Home() {
   const mapRef = useRef();
@@ -26,6 +27,7 @@ export default function Home() {
     "https://labs.metoffice.gov.uk/edr/collections?f=application/json"
   );
   const [newUrl, setNewUrl] = useState();
+  const [geojsonData, setGeojsonData] = useState()
   const [selectedCollection, setSelectedCollection] = useState();
   const [selectedCollectionId, setSelectedCollectionId] = useState("");
   const [selectedCoordinates, setSelectedCoordinates] = useState("");
@@ -39,7 +41,7 @@ export default function Home() {
       ? selectedCollection?.data_queries?.locations?.link.href
       : null
   );
-  const { data: geojsonData, isLoading, refetch } = GetEdrData(newUrl);
+  const {mutateAsync: getEdrData} = GetEdrData()
 
   useEffect(() => {
     if (getCollections && selectedCollectionId) {
@@ -80,7 +82,16 @@ export default function Home() {
         "&f=" +
         selectedOutput;
       setNewUrl(createUrl);
-      refetch();
+      getEdrData(createUrl).then(res => {
+        console.log(res)
+        setGeojsonData(res)
+        toast.success('URL created successfully')
+        debugger
+      }).catch(err => {
+        console.log(err.response.data.description)
+        toast.error('URL not created properly')
+        debugger
+      })
     }
   };
   const onEditPath = (e) => {
@@ -232,6 +243,7 @@ export default function Home() {
                 className="my-2"
                 closeMenuOnSelect={false}
                 isMulti
+                value={selectedParameters}
                 options={Object.keys(selectedCollection.parameter_names).map(
                   (x) => ({
                     value: x,
