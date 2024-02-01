@@ -16,6 +16,7 @@
     "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-json-view-lite": "^1.2.1",
     "react-leaflet": "^4.2.1",
     "react-leaflet-draw": "^0.20.4",
     "react-select": "^5.8.0",
