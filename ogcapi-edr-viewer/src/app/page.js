@@ -144,15 +144,8 @@ export default function Home() {
     setQueryParams(params);
   };
 
-  const shouldUseCustomMarker =
-    selectedCoordinates === "" &&
-    ["position", "radius"].includes(selectedQuery);
-
-  // Configure marker icon based on the conditions
-  const markerIcon = shouldUseCustomMarker
-    ? new L.Icon.Default() // Use the default marker icon
-    : new L.Icon({ iconUrl: "path/to/custom-marker.png", iconSize: [32, 32] }); // Use your custom marker icon
-  const onEditPath = (e) => {
+  
+  const onEditDraw = (e) => {
     const layers = e.layers;
     layers.eachLayer((layer) => {
       if (layer instanceof L.Polygon) {
@@ -462,7 +455,7 @@ export default function Home() {
               <FeatureGroup ref={featureGroupRef}>
                 <EditControl
                   position="topright"
-                  onEdited={onEditPath}
+                  onEdited={onEditDraw}
                   onCreated={onCreate}
                   onDeleted={onDeleted}
                   draw={{
