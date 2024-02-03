@@ -72,8 +72,16 @@ export default function Home() {
     setSelectedParameters([]);
     setSelectedWithin("1");
     setSelectedUnit("");
+    setGeojsonData();
     clearDrawnItems(map);
     onDeleted();
+  };
+
+  const resetQuery = () => {
+    setSelectedQuery("");
+    setSelectedCoordinates("");
+    setGeojsonData();
+    clearDrawnItems(map);
   };
 
   const manageParm = (e) => {
@@ -144,7 +152,6 @@ export default function Home() {
     setQueryParams(params);
   };
 
-  
   const onEditDraw = (e) => {
     const layers = e.layers;
     layers.eachLayer((layer) => {
@@ -203,15 +210,6 @@ export default function Home() {
         return {};
     }
   };
-
-  // const customPointStyle = {
-  //   radius: 8,
-  //   fillColor: "blue",
-  //   color: "white",
-  //   weight: 2,
-  //   opacity: 1,
-  //   fillOpacity: 0.8,
-  // };
 
   const pointToLayer = (feature, latlng) => {
     return L.circleMarker(latlng);
@@ -280,9 +278,7 @@ export default function Home() {
                 setSelectedCollectionId(e.target.value);
               }}
             >
-              <option disabled selected>
-                Select Collection
-              </option>
+              <option>Select Collection</option>
               {getCollections?.collections.map((c, i) => (
                 <option key={i} value={c.id}>
                   {c.title}
@@ -300,7 +296,10 @@ export default function Home() {
                     <select
                       className="inputArea"
                       value={selectedQuery}
-                      onChange={(e) => setSelectedQuery(e.target.value)}
+                      onChange={(e) => {
+                        resetQuery();
+                        setSelectedQuery(e.target.value);
+                      }}
                     >
                       <option>Select query</option>
                       {Object.keys(selectedCollection.data_queries).map(
