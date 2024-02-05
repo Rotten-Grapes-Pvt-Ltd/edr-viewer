@@ -3,6 +3,9 @@ Visualise of EDR data quickly
 
 ---
 
+![Homepage](/docs/assets/img/homepage.png "Homepage")
+
+
 ## What is OGC API - EDR
 
 
