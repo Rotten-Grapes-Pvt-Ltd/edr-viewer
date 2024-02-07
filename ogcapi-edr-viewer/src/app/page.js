@@ -33,6 +33,7 @@ export default function Home() {
   const [selectedTab, setSelectedTab] = useState("map");
   const [map, setMap] = useState();
   const [newUrl, setNewUrl] = useState();
+  const [isEditing, setIsEditing] = useState(false);
   const [queryParams, setQueryParams] = useState();
   const [geojsonData, setGeojsonData] = useState();
   const [selectedCollection, setSelectedCollection] = useState();
@@ -87,6 +88,20 @@ export default function Home() {
   const manageParm = (e) => {
     setSelectedParameters(e);
   };
+  const selectAllParm = (e) => {
+    if (e.target.checked) {
+      let p = [];
+      Object.keys(selectedCollection.parameter_names).map((x) =>
+        p.push({
+          value: x,
+          label: selectedCollection.parameter_names[x].description,
+        })
+      );
+      setSelectedParameters(p);
+    } else {
+      setSelectedParameters([]);
+    }
+  };
 
   const valid = () => {
     return (
@@ -95,7 +110,8 @@ export default function Home() {
       selectedParameters.length > 0 &&
       selectedCoordinates !== "" &&
       selectedCSR !== "" &&
-      selectedOutput !== ""
+      selectedOutput !== "" &&
+      !isEditing
     );
   };
 
@@ -153,18 +169,12 @@ export default function Home() {
   };
 
   const onEditDraw = (e) => {
-    const layers = e.layers;
-    layers.eachLayer((layer) => {
-      if (layer instanceof L.Polygon) {
-        const wkt = layer
-          .toGeoJSON()
-          .geometry.coordinates.map((ring) =>
-            ring.map((point) => point.join(" ")).join(",")
-          )
-          .join(";");
-        setSelectedCoordinates(`POLYGON((${wkt}))`);
-      }
+    setGeojsonData();
+    e.layers.eachLayer((layer) => {
+      const wkt = toWKT(layer);
+      setSelectedCoordinates(wkt);
     });
+    setIsEditing(false);
   };
 
   const onCreate = (e) => {
@@ -227,19 +237,27 @@ export default function Home() {
     });
   };
 
+  const startEdit = () => {
+    setIsEditing(true);
+  };
+
+  useEffect(() => {
+    setGeojsonData();
+  }, [selectedUnit, selectedWithin, selectedParameters, selectedCoordinates]);
+
   return (
     <>
       {(gettongEdrData || gettingCollection || gettingLocaion) && <Loader />}
       <div className="grid grid-cols-3 gap-5">
         <div className="grid grid-cols-2 bg-slate-300">
           <button
-            className={selectedTab === "map" && "btnPrimary"}
+            className={selectedTab === "map" ? "btnPrimary" : ""}
             onClick={() => setSelectedTab("map")}
           >
             Map
           </button>
           <button
-            className={selectedTab === "data" && "btnPrimary"}
+            className={selectedTab === "data" ? "btnPrimary" : ""}
             onClick={() => setSelectedTab("data")}
           >
             Data
@@ -379,9 +397,15 @@ export default function Home() {
                   disabled
                 />
 
-                <label className="mb-2 font-semibold text-slate-200">
-                  Choose parameters
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="font-semibold text-slate-200">
+                    Choose parameters
+                  </label>
+                  <label>
+                    <input type="checkbox" onChange={(e) => selectAllParm(e)} />{" "}
+                    Select All
+                  </label>
+                </div>
                 <Select
                   className="my-2"
                   closeMenuOnSelect={false}
@@ -455,6 +479,7 @@ export default function Home() {
                 <EditControl
                   position="topright"
                   onEdited={onEditDraw}
+                  onEditStart={startEdit}
                   onCreated={onCreate}
                   onDeleted={onDeleted}
                   draw={{
@@ -517,11 +542,8 @@ export default function Home() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
             </MapContainer>
+            <input type="text" value={newUrl} className="mt-3 inputArea" />
           </div>
-        </div>
-
-        <div className="col-span-3 p-5">
-          <input type="text" value={newUrl} className="inputArea" />
         </div>
       </div>
       <div
