@@ -248,6 +248,9 @@ export default function Home() {
   return (
     <>
       {(gettongEdrData || gettingCollection || gettingLocaion) && <Loader />}
+      <div className="p-2 text-center bg-gray-700">
+        This is a pre-release version , so you might face 🐞 !{" "}
+      </div>
       <div className="grid grid-cols-3 gap-5">
         <div className="grid grid-cols-2 bg-slate-300">
           <button
