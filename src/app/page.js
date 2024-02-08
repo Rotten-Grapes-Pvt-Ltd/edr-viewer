@@ -479,7 +479,7 @@ export default function Home() {
                 <EditControl
                   position="topright"
                   onEdited={onEditDraw}
-                  onEditStart={startEdit}
+                  // onEditStart={startEdit}
                   onCreated={onCreate}
                   onDeleted={onDeleted}
                   draw={{
@@ -507,26 +507,26 @@ export default function Home() {
                         : false,
                     circlemarker: false,
                   }}
-                  edit={{
-                    rectangle:
-                      selectedCoordinates !== ""
-                        ? selectedQuery === "items"
-                        : false,
-                    circle: false,
-                    polygon:
-                      selectedCoordinates !== ""
-                        ? selectedQuery === "area"
-                        : false,
-                    marker:
-                      selectedCoordinates !== ""
-                        ? ["position", "radius"].includes(selectedQuery)
-                        : false,
-                    polyline:
-                      selectedCoordinates !== ""
-                        ? selectedQuery === "trajectory"
-                        : false,
-                    circlemarker: false,
-                  }}
+                  // edit={{
+                  //   rectangle:
+                  //     selectedCoordinates !== ""
+                  //       ? selectedQuery === "items"
+                  //       : false,
+                  //   circle: false,
+                  //   polygon:
+                  //     selectedCoordinates !== ""
+                  //       ? selectedQuery === "area"
+                  //       : false,
+                  //   marker:
+                  //     selectedCoordinates !== ""
+                  //       ? ["position", "radius"].includes(selectedQuery)
+                  //       : false,
+                  //   polyline:
+                  //     selectedCoordinates !== ""
+                  //       ? selectedQuery === "trajectory"
+                  //       : false,
+                  //   circlemarker: false,
+                  // }}
                 />
                 {/* <Circle center={[51.51, -0.06]} radius={200} /> */}
                 {selectedOutput === "GeoJSON" && geojsonData && (
