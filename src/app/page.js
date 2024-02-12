@@ -1,56 +1,56 @@
-"use client";
+'use client';
 // import MapView from "@/components/MapView";
 import {
   GetCollections,
   GetEdrData,
   GetLocations,
-} from "@/queries/ControllersQueries";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+} from '@/queries/ControllersQueries';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 import {
   Circle,
   FeatureGroup,
   GeoJSON,
   MapContainer,
   TileLayer,
-} from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import "leaflet-draw/dist/leaflet.draw.css";
-import "@/assets/react-leaflet-draw.css";
-import { EditControl } from "react-leaflet-draw";
-import Select from "react-select";
-import { toast } from "react-toastify";
-import { toWKT } from "@/services/helper";
-import Loader from "@/components/Loader";
-import TreeView from "@/components/TreeView";
-import Link from "next/link";
+} from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-draw/dist/leaflet.draw.css';
+import '@/assets/react-leaflet-draw.css';
+import { EditControl } from 'react-leaflet-draw';
+import Select from 'react-select';
+import { toast } from 'react-toastify';
+import { toWKT } from '@/services/helper';
+import Loader from '@/components/Loader';
+import TreeView from '@/components/TreeView';
+import Link from 'next/link';
 
 export default function Home() {
   const mapRef = useRef();
   const featureGroupRef = useRef();
   const [url, setUrl] = useState(
-    "https://labs.metoffice.gov.uk/edr/collections?f=application/json"
+    'https://labs.metoffice.gov.uk/edr/collections?f=application/json'
   );
-  const [selectedTab, setSelectedTab] = useState("map");
+  const [selectedTab, setSelectedTab] = useState('map');
   const [map, setMap] = useState();
   const [newUrl, setNewUrl] = useState();
   const [isEditing, setIsEditing] = useState(false);
   const [queryParams, setQueryParams] = useState();
   const [geojsonData, setGeojsonData] = useState();
   const [selectedCollection, setSelectedCollection] = useState();
-  const [selectedCollectionId, setSelectedCollectionId] = useState("");
-  const [selectedCoordinates, setSelectedCoordinates] = useState("");
-  const [selectedQuery, setSelectedQuery] = useState("");
-  const [selectedWithin, setSelectedWithin] = useState("1");
-  const [selectedUnit, setSelectedUnit] = useState("");
-  const [selectedCSR, setSelectedCSR] = useState("");
-  const [selectedOutput, setSelectedOutput] = useState("");
+  const [selectedCollectionId, setSelectedCollectionId] = useState('');
+  const [selectedCoordinates, setSelectedCoordinates] = useState('');
+  const [selectedQuery, setSelectedQuery] = useState('');
+  const [selectedWithin, setSelectedWithin] = useState('1');
+  const [selectedUnit, setSelectedUnit] = useState('');
+  const [selectedCSR, setSelectedCSR] = useState('');
+  const [selectedOutput, setSelectedOutput] = useState('');
   const [selectedParameters, setSelectedParameters] = useState([]);
   // const [valid, setValid] = useState(false);
   const { data: getCollections, isLoading: gettingCollection } =
     GetCollections(url);
   const { data: getLocations, isLoading: gettingLocaion } = GetLocations(
-    selectedQuery === "locations"
+    selectedQuery === 'locations'
       ? selectedCollection?.data_queries?.locations?.link.href
       : null
   );
@@ -67,21 +67,21 @@ export default function Home() {
   }, [selectedCollectionId]);
 
   const reset = () => {
-    setSelectedCoordinates("");
-    setSelectedQuery("");
-    setSelectedCSR("");
-    setSelectedOutput("");
+    setSelectedCoordinates('');
+    setSelectedQuery('');
+    setSelectedCSR('');
+    setSelectedOutput('');
     setSelectedParameters([]);
-    setSelectedWithin("1");
-    setSelectedUnit("");
+    setSelectedWithin('1');
+    setSelectedUnit('');
     setGeojsonData();
     clearDrawnItems(map);
     onDeleted();
   };
 
   const resetQuery = () => {
-    setSelectedQuery("");
-    setSelectedCoordinates("");
+    setSelectedQuery('');
+    setSelectedCoordinates('');
     setGeojsonData();
     clearDrawnItems(map);
   };
@@ -107,11 +107,11 @@ export default function Home() {
   const valid = () => {
     return (
       selectedCollectionId &&
-      selectedQuery !== "" &&
+      selectedQuery !== '' &&
       selectedParameters.length > 0 &&
-      selectedCoordinates !== "" &&
-      selectedCSR !== "" &&
-      selectedOutput !== "" &&
+      selectedCoordinates !== '' &&
+      selectedCSR !== '' &&
+      selectedOutput !== '' &&
       !isEditing
     );
   };
@@ -119,17 +119,17 @@ export default function Home() {
   const createEdrUrl = () => {
     if (valid()) {
       let createUrl =
-        "https://labs.metoffice.gov.uk/edr/collections/" +
+        'https://labs.metoffice.gov.uk/edr/collections/' +
         selectedCollectionId +
-        "/" +
+        '/' +
         selectedQuery;
 
-      createUrl += "?coords=" + selectedCoordinates;
+      createUrl += '?coords=' + selectedCoordinates;
 
-      if (selectedQuery === "radius") {
-        if (selectedWithin !== "" && selectedUnit !== "") {
+      if (selectedQuery === 'radius') {
+        if (selectedWithin !== '' && selectedUnit !== '') {
           createUrl +=
-            "&within=" + selectedWithin + "&within-units=" + selectedUnit;
+            '&within=' + selectedWithin + '&within-units=' + selectedUnit;
         } else {
           toast.warning("Please select unit option under 'Within'.");
           return;
@@ -137,11 +137,11 @@ export default function Home() {
       }
 
       createUrl +=
-        "&parameter-name=" +
-        selectedParameters.map((item) => item.value).join(",") +
-        "&crs=" +
+        '&parameter-name=' +
+        selectedParameters.map((item) => item.value).join(',') +
+        '&crs=' +
         selectedCSR +
-        "&f=" +
+        '&f=' +
         selectedOutput;
 
       setNewUrl(createUrl);
@@ -150,11 +150,11 @@ export default function Home() {
       getEdrData(createUrl)
         .then((res) => {
           setGeojsonData(res);
-          toast.success("URL created successfully");
+          toast.success('URL created successfully');
         })
         .catch((err) => {
           console.log(err.response.data.description);
-          toast.error("URL not created properly");
+          toast.error('URL not created properly');
         });
     }
   };
@@ -183,7 +183,7 @@ export default function Home() {
     setSelectedCoordinates(wkt);
   };
   const onDeleted = (e) => {
-    setSelectedCoordinates("");
+    setSelectedCoordinates('');
   };
 
   const handleMapReady = (map) => {
@@ -193,27 +193,27 @@ export default function Home() {
   const getStyle = (feature) => {
     const { type } = feature.geometry;
     switch (type) {
-      case "MultiPolygon":
+      case 'MultiPolygon':
         return {
-          fillColor: "blue",
-          color: "black",
+          fillColor: 'blue',
+          color: 'black',
           weight: 2,
         };
-      case "MultiLineString":
+      case 'MultiLineString':
         return {
-          color: "orange",
+          color: 'orange',
           weight: 3,
         };
-      case "Polygon":
+      case 'Polygon':
         return {
-          fillColor: "green",
-          color: "black",
+          fillColor: 'green',
+          color: 'black',
           weight: 2,
         };
-      case "Point":
+      case 'Point':
         return {
-          fillColor: "red",
-          color: "black",
+          fillColor: 'red',
+          color: 'black',
           weight: 2,
           radius: 8,
         };
@@ -250,37 +250,41 @@ export default function Home() {
     <>
       {(gettongEdrData || gettingCollection || gettingLocaion) && <Loader />}
 
-      <div className="flex justify-between p-2 text-center bg-gray-700">
-        <div>This is a pre-release version , so you might face 🐞 !{" "}</div>
-        <div className="flex items-center gap-3">
-          <Link href="mailto:office@rottengrapes.tech"><Image src={'/images/email.svg'} alt="" height={24} width={24} /></Link>
-          <Link href="https://github.com/Rotten-Grapes-Pvt-Ltd/edr-viewer"><Image src={'/images/git.svg'} alt="" height={24} width={24} /></Link>
+      <div className='flex justify-between p-2 text-center bg-gray-700'>
+        <div>This is a pre-release version , so you might face 🐞 ! </div>
+        <div className='flex items-center gap-3'>
+          <Link href='mailto:office@rottengrapes.tech'>
+            <Image src={'/images/email.svg'} alt='' height={24} width={24} />
+          </Link>
+          <Link href='https://github.com/Rotten-Grapes-Pvt-Ltd/edr-viewer'>
+            <Image src={'/images/git.svg'} alt='' height={24} width={24} />
+          </Link>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-5">
-        <div className="grid grid-cols-2 bg-slate-300">
+      <div className='grid grid-cols-3 gap-5'>
+        <div className='grid grid-cols-2 bg-slate-300'>
           <button
-            className={selectedTab === "map" ? "btnPrimary" : ""}
-            onClick={() => setSelectedTab("map")}
+            className={selectedTab === 'map' ? 'btnPrimary' : ''}
+            onClick={() => setSelectedTab('map')}
           >
             Map
           </button>
           <button
-            className={selectedTab === "data" ? "btnPrimary" : ""}
-            onClick={() => setSelectedTab("data")}
+            className={selectedTab === 'data' ? 'btnPrimary' : ''}
+            onClick={() => setSelectedTab('data')}
           >
             Data
           </button>
         </div>
-        <div className="flex col-span-2 p-3">
+        <div className='flex col-span-2 p-3'>
           <input
-            type="text"
-            className="inputArea grow"
-            placeholder="Url"
+            type='text'
+            className='inputArea grow'
+            placeholder='Url'
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
-          <button className="btnSecondary whitespace-nowrap">
+          <button className='btnSecondary whitespace-nowrap'>
             Retrieve collections
           </button>
         </div>
@@ -288,17 +292,17 @@ export default function Home() {
 
       <div
         className={`grid grid-cols-3 gap-5 ${
-          selectedTab === "map" ? "block" : "hidden"
+          selectedTab === 'map' ? 'block' : 'hidden'
         }`}
       >
-        <div className="p-3">
+        <div className='p-3'>
           <div>
-            <h3 className="py-5 font-semibold">
+            <h3 className='py-5 font-semibold'>
               Collections (demo not for operational use)
             </h3>
-            <label className="font-semibold text-slate-200">Collection:</label>
+            <label className='font-semibold text-slate-200'>Collection:</label>
             <select
-              className="mt-2 mb-5 inputArea"
+              className='mt-2 mb-5 inputArea'
               value={selectedCollectionId}
               onChange={(e) => {
                 reset();
@@ -315,13 +319,13 @@ export default function Home() {
 
             {selectedCollection && (
               <>
-                <div className="flex gap-2 mb-3">
-                  <div className="w-full">
-                    <div className="mb-2 font-semibold text-slate-200">
+                <div className='flex gap-2 mb-3'>
+                  <div className='w-full'>
+                    <div className='mb-2 font-semibold text-slate-200'>
                       Query:
                     </div>
                     <select
-                      className="inputArea"
+                      className='inputArea'
                       value={selectedQuery}
                       onChange={(e) => {
                         resetQuery();
@@ -339,23 +343,23 @@ export default function Home() {
                     </select>
                   </div>
 
-                  {selectedQuery === "radius" && (
-                    <div className="">
-                      <div className="mb-2 font-semibold text-slate-200">
+                  {selectedQuery === 'radius' && (
+                    <div className=''>
+                      <div className='mb-2 font-semibold text-slate-200'>
                         Within:
                       </div>
-                      <div className="flex gap-2">
+                      <div className='flex gap-2'>
                         <input
-                          type="number"
-                          min="1"
-                          className="inputArea"
+                          type='number'
+                          min='1'
+                          className='inputArea'
                           value={selectedWithin}
                           onChange={(e) => setSelectedWithin(e.target.value)}
                         />
                         <select
-                          name=""
-                          id=""
-                          className="inputArea"
+                          name=''
+                          id=''
+                          className='inputArea'
                           value={selectedUnit}
                           onChange={(e) => setSelectedUnit(e.target.value)}
                         >
@@ -373,13 +377,13 @@ export default function Home() {
                   )}
                 </div>
 
-                {selectedQuery === "locations" && (
-                  <div className="w-full">
-                    <label className="font-semibold text-slate-200">
+                {selectedQuery === 'locations' && (
+                  <div className='w-full'>
+                    <label className='font-semibold text-slate-200'>
                       Locations:
                     </label>
                     <select
-                      className="mt-2 mb-5 inputArea"
+                      className='mt-2 mb-5 inputArea'
                       value={selectedQuery}
                       onChange={(e) => setSelectedQuery(e.target.value)}
                     >
@@ -393,30 +397,30 @@ export default function Home() {
                   </div>
                 )}
 
-                <label className="font-semibold text-slate-200">
+                <label className='font-semibold text-slate-200'>
                   Coordinates:
                 </label>
-                {selectedCoordinates === "" && (
-                  <div className="mb-2">Please draw on map</div>
+                {selectedCoordinates === '' && (
+                  <div className='mb-2'>Please draw on map</div>
                 )}
                 <input
-                  type="text"
-                  className="mt-2 mb-5 inputArea"
+                  type='text'
+                  className='mt-2 mb-5 inputArea'
                   value={selectedCoordinates}
                   disabled
                 />
 
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-semibold text-slate-200">
+                <div className='flex items-center justify-between mb-2'>
+                  <label className='font-semibold text-slate-200'>
                     Choose parameters
                   </label>
                   <label>
-                    <input type="checkbox" onChange={(e) => selectAllParm(e)} />{" "}
+                    <input type='checkbox' onChange={(e) => selectAllParm(e)} />{' '}
                     Select All
                   </label>
                 </div>
                 <Select
-                  className="my-2"
+                  className='my-2'
                   closeMenuOnSelect={false}
                   isMulti
                   value={selectedParameters}
@@ -433,14 +437,14 @@ export default function Home() {
 
             {/* {console.log("selectedCollection ", selectedCollection)} */}
             {selectedCollection && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className='grid grid-cols-2 gap-3'>
                 <div>
-                  <div className="mb-2 font-semibold text-slate-200">
-                    Output CSR
+                  <div className='mb-2 font-semibold text-slate-200'>
+                    Output CRS
                   </div>
                   <select
                     value={selectedCSR}
-                    className="inputArea"
+                    className='inputArea'
                     onChange={(e) => setSelectedCSR(e.target.value)}
                   >
                     <option>Select CSR</option>
@@ -450,11 +454,11 @@ export default function Home() {
                   </select>
                 </div>
                 <div>
-                  <div className="mb-2 font-semibold text-slate-200">
+                  <div className='mb-2 font-semibold text-slate-200'>
                     Output Format
                   </div>
                   <select
-                    className="inputArea"
+                    className='inputArea'
                     value={selectedOutput}
                     onChange={(e) => setSelectedOutput(e.target.value)}
                   >
@@ -467,7 +471,7 @@ export default function Home() {
               </div>
             )}
             <button
-              className="w-full mt-3 btnPrimary disabled:opacity-50"
+              className='w-full mt-3 btnPrimary disabled:opacity-50'
               disabled={!valid()}
               onClick={createEdrUrl}
             >
@@ -476,8 +480,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="col-span-2">
-          <div className="p-3">
+        <div className='col-span-2'>
+          <div className='p-3'>
             <MapContainer
               center={[51.505, -0.09]}
               zoom={13}
@@ -486,33 +490,33 @@ export default function Home() {
             >
               <FeatureGroup ref={featureGroupRef}>
                 <EditControl
-                  position="topright"
+                  position='topright'
                   onEdited={onEditDraw}
                   // onEditStart={startEdit}
                   onCreated={onCreate}
                   onDeleted={onDeleted}
                   draw={{
                     rectangle:
-                      selectedCoordinates === ""
-                        ? selectedQuery === "items"
+                      selectedCoordinates === ''
+                        ? selectedQuery === 'items'
                         : false,
                     circle: false,
                     polygon:
-                      selectedCoordinates === ""
-                        ? selectedQuery === "area"
+                      selectedCoordinates === ''
+                        ? selectedQuery === 'area'
                         : false,
                     marker:
-                      selectedCoordinates === ""
-                        ? ["position", "radius"].includes(selectedQuery) && {
+                      selectedCoordinates === ''
+                        ? ['position', 'radius'].includes(selectedQuery) && {
                             icon: new L.Icon({
-                              iconUrl: "marker-icon.png",
+                              iconUrl: 'marker-icon.png',
                               iconSize: [32, 32],
                             }),
                           }
                         : false,
                     polyline:
-                      selectedCoordinates === ""
-                        ? selectedQuery === "trajectory"
+                      selectedCoordinates === ''
+                        ? selectedQuery === 'trajectory'
                         : false,
                     circlemarker: false,
                   }}
@@ -538,7 +542,7 @@ export default function Home() {
                   // }}
                 />
                 {/* <Circle center={[51.51, -0.06]} radius={200} /> */}
-                {selectedOutput === "GeoJSON" && geojsonData && (
+                {selectedOutput === 'GeoJSON' && geojsonData && (
                   <GeoJSON
                     data={geojsonData}
                     style={getStyle}
@@ -548,31 +552,31 @@ export default function Home() {
               </FeatureGroup>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
               />
             </MapContainer>
-            <input type="text" value={newUrl} className="mt-3 inputArea" />
+            <input type='text' value={newUrl} className='mt-3 inputArea' />
           </div>
         </div>
       </div>
       <div
         className={`grid grid-cols-3 gap-5 ${
-          selectedTab === "data" ? "block" : "hidden"
+          selectedTab === 'data' ? 'block' : 'hidden'
         }`}
       >
-        <div className="p-3">
-          <div className="my-2">
-            {"/edr/collections/" + selectedCollectionId + "/" + selectedQuery}
+        <div className='p-3'>
+          <div className='my-2'>
+            {'/edr/collections/' + selectedCollectionId + '/' + selectedQuery}
           </div>
           {queryParams &&
             Object.keys(queryParams).map((x, key) => (
-              <div key={key} className="grid grid-cols-3 gap-2 my-2">
-                <div className="font-semibold">{x}</div>{" "}
-                <div className="col-span-2 break-words"> {queryParams[x]}</div>
+              <div key={key} className='grid grid-cols-3 gap-2 my-2'>
+                <div className='font-semibold'>{x}</div>{' '}
+                <div className='col-span-2 break-words'> {queryParams[x]}</div>
               </div>
             ))}
         </div>
-        <div className="col-span-2 p-3 max-h-[calc(100vh-100px)] overflow-y-auto">
+        <div className='col-span-2 p-3 max-h-[calc(100vh-100px)] overflow-y-auto'>
           {geojsonData && <TreeView data={geojsonData} />}
         </div>
       </div>
