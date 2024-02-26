@@ -77,15 +77,16 @@ export default function Home() {
     if (mapRef.current) {
       L.geoJSON(geojsonData).addTo(mapRef.current)
     }
-
+    
   }
-
+  
+  //! temporary fix 
   useEffect(() => {
-    if (geojsonData) {
+    if (selectedQuery === "locations") {
       plotGeoJsonOnMap()
     }
 
-  }, [geojsonData])
+  }, [selectedQuery])
 
 
   useEffect(() => {
@@ -109,6 +110,7 @@ export default function Home() {
     setGeojsonData();
     clearDrawnItems(map);
     onDeleted();
+    setSelectedRegion("");
   };
 
   const resetQuery = () => {
@@ -157,7 +159,7 @@ export default function Home() {
         "/" +
         selectedQuery;
 
-        //* conditionals 
+      //* conditionals 
       if (selectedCoordinates !== "") {
         createUrl += "?coords=" + selectedCoordinates;
       }
@@ -478,7 +480,7 @@ export default function Home() {
                 )}
 
 
-{/* 
+                {/* 
   // * time field
  */}
                 {selectedRegion !== "" && (
