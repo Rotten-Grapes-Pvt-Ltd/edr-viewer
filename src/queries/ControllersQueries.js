@@ -25,6 +25,17 @@ export const GetLocations = (url) => {
 //   });
 // };
 
+
+
+export const GetTimeInterval = (url) => {
+  return useQuery({
+    queryKey: [url],
+    queryFn: () => getApi(url),
+    enabled: !!url,
+  });
+};
+
+
 export const GetEdrData = () => {
   return useMutation({ mutationFn: (url) => getApi(url) });
 };

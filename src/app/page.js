@@ -4,9 +4,10 @@ import {
   GetCollections,
   GetEdrData,
   GetLocations,
+  GetTimeInterval,
 } from "@/queries/ControllersQueries";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Circle,
   FeatureGroup,
@@ -24,6 +25,9 @@ import { toWKT } from "@/services/helper";
 import Loader from "@/components/Loader";
 import TreeView from "@/components/TreeView";
 import Link from "next/link";
+import { useDateRange } from "@/hooks/useDateRange";
+import { getApi } from "@/services/api";
+import L from 'leaflet'
 
 export default function Home() {
   const mapRef = useRef();
@@ -47,6 +51,11 @@ export default function Home() {
   const [selectedOutput, setSelectedOutput] = useState("");
   const [selectedParameters, setSelectedParameters] = useState([]);
   // const [valid, setValid] = useState(false);
+
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedStartTime, setSelectedStartTime] = useState("");
+  const [selectedEndTime, setSelectedEndTime] = useState("");
+
   const { data: getCollections, isLoading: gettingCollection } =
     GetCollections(url);
   const { data: getLocations, isLoading: gettingLocaion } = GetLocations(
@@ -55,6 +64,30 @@ export default function Home() {
       : null
   );
   const { mutateAsync: getEdrData, isPending: gettongEdrData } = GetEdrData();
+
+  const { data: getTime, isLoading: gettingTime } = GetTimeInterval(`${url.substring(0, url.indexOf("?"))}/${selectedCollectionId}`);
+  // const { pageNumber, setPageNumber } = useState(1)
+  const { dateList } = useDateRange(getTime, 60 * 60 * 1000);
+
+  let startDate = dateList;
+  let enddate = [...dateList].reverse();
+
+  // * This function is used to plot the geojson data on the map 
+  const plotGeoJsonOnMap = () => {
+    if (mapRef.current) {
+      L.geoJSON(geojsonData).addTo(mapRef.current)
+    }
+    
+  }
+  
+  //! temporary fix 
+  useEffect(() => {
+    if (selectedQuery === "locations") {
+      plotGeoJsonOnMap()
+    }
+
+  }, [selectedQuery])
+
 
   useEffect(() => {
     if (getCollections && selectedCollectionId) {
@@ -77,6 +110,7 @@ export default function Home() {
     setGeojsonData();
     clearDrawnItems(map);
     onDeleted();
+    setSelectedRegion("");
   };
 
   const resetQuery = () => {
@@ -109,7 +143,8 @@ export default function Home() {
       selectedCollectionId &&
       selectedQuery !== "" &&
       selectedParameters.length > 0 &&
-      selectedCoordinates !== "" &&
+      // * selectedCoordinates is commented because location doesn't requries coordinates 
+      // selectedCoordinates !== "" &&
       selectedCSR !== "" &&
       selectedOutput !== "" &&
       !isEditing
@@ -124,7 +159,10 @@ export default function Home() {
         "/" +
         selectedQuery;
 
-      createUrl += "?coords=" + selectedCoordinates;
+      //* conditionals 
+      if (selectedCoordinates !== "") {
+        createUrl += "?coords=" + selectedCoordinates;
+      }
 
       if (selectedQuery === "radius") {
         if (selectedWithin !== "" && selectedUnit !== "") {
@@ -134,6 +172,12 @@ export default function Home() {
           toast.warning("Please select unit option under 'Within'.");
           return;
         }
+      }
+
+      // * locations conditions
+      if (selectedQuery === "locations") {
+        createUrl += "/" + selectedRegion
+          + "?&datetime=" + selectedStartTime + "/" + selectedEndTime
       }
 
       createUrl +=
@@ -153,7 +197,8 @@ export default function Home() {
           toast.success("URL created successfully");
         })
         .catch((err) => {
-          console.log(err.response.data.description);
+          console.log(err);
+          // console.log(err?.response.data.description);
           toast.error("URL not created properly");
         });
     }
@@ -329,9 +374,8 @@ export default function Home() {
       </div>
 
       <div
-        className={`grid grid-cols-3 gap-5 ${
-          selectedTab === "map" ? "block" : "hidden"
-        }`}
+        className={`grid grid-cols-3 gap-5 ${selectedTab === "map" ? "block" : "hidden"
+          }`}
       >
         <div className="p-3">
           <div>
@@ -422,8 +466,8 @@ export default function Home() {
                     </label>
                     <select
                       className="mt-2 mb-5 inputArea"
-                      value={selectedQuery}
-                      onChange={(e) => setSelectedQuery(e.target.value)}
+                      value={selectedRegion}
+                      onChange={(e) => setSelectedRegion(e.target.value)}
                     >
                       <option>Select query</option>
                       {getLocations?.features.map((loc, index) => (
@@ -435,19 +479,68 @@ export default function Home() {
                   </div>
                 )}
 
-                <label className="font-semibold text-slate-200">
-                  Coordinates:
-                </label>
-                {selectedCoordinates === "" && (
-                  <div className="mb-2">Please draw on map</div>
+
+                {/* 
+  // * time field
+ */}
+                {selectedRegion !== "" && (
+                  <>
+                    <div className="w-full">
+                      <label className="font-semibold text-slate-200">
+                        Start Time
+                      </label>
+                      <select
+                        className="mt-2 mb-5 inputArea"
+                        value={selectedStartTime}
+                        onChange={(e) => setSelectedStartTime(e.target.value)}
+                      >
+                        <option></option>
+                        {startDate.slice(0, 10).map((date, index) => (
+                          <option key={index} value={date}>
+                            {date}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="w-full">
+                      <label className="font-semibold text-slate-200">
+                        End Time
+                      </label>
+                      <select
+                        className="mt-2 mb-5 inputArea"
+                        value={selectedEndTime}
+                        onChange={(e) => setSelectedEndTime(e.target.value)}
+                      >
+                        <option></option>
+                        {enddate.slice(0, 10).map((date, index) => (
+                          <option key={index} value={date}>
+                            {date}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </>
                 )}
-                <input
-                  type="text"
-                  className="mt-2 mb-5 inputArea"
-                  value={selectedCoordinates}
-                  readOnly
-                  disabled
-                />
+
+                {
+                  selectedQuery !== 'locations' && (
+                    <>
+                      <label className="font-semibold text-slate-200">
+                        Coordinates:
+                      </label>
+                      {selectedCoordinates === "" && (
+                        <div className="mb-2">Please draw on map</div>
+                      )}
+                      <input
+                        type="text"
+                        className="mt-2 mb-5 inputArea"
+                        value={selectedCoordinates}
+                        readOnly
+                        disabled
+                      />
+                    </>
+                  )
+                }
 
                 <div className="flex items-center justify-between mb-2">
                   <label className="font-semibold text-slate-200">
@@ -547,11 +640,11 @@ export default function Home() {
                     marker:
                       selectedCoordinates === ""
                         ? ["position", "radius"].includes(selectedQuery) && {
-                            icon: new L.Icon({
-                              iconUrl: "marker-icon.png",
-                              iconSize: [32, 32],
-                            }),
-                          }
+                          icon: new L.Icon({
+                            iconUrl: "marker-icon.png",
+                            iconSize: [32, 32],
+                          }),
+                        }
                         : false,
                     polyline:
                       selectedCoordinates === ""
@@ -559,26 +652,26 @@ export default function Home() {
                         : false,
                     circlemarker: false,
                   }}
-                  // edit={{
-                  //   rectangle:
-                  //     selectedCoordinates !== ""
-                  //       ? selectedQuery === "items"
-                  //       : false,
-                  //   circle: false,
-                  //   polygon:
-                  //     selectedCoordinates !== ""
-                  //       ? selectedQuery === "area"
-                  //       : false,
-                  //   marker:
-                  //     selectedCoordinates !== ""
-                  //       ? ["position", "radius"].includes(selectedQuery)
-                  //       : false,
-                  //   polyline:
-                  //     selectedCoordinates !== ""
-                  //       ? selectedQuery === "trajectory"
-                  //       : false,
-                  //   circlemarker: false,
-                  // }}
+                // edit={{
+                //   rectangle:
+                //     selectedCoordinates !== ""
+                //       ? selectedQuery === "items"
+                //       : false,
+                //   circle: false,
+                //   polygon:
+                //     selectedCoordinates !== ""
+                //       ? selectedQuery === "area"
+                //       : false,
+                //   marker:
+                //     selectedCoordinates !== ""
+                //       ? ["position", "radius"].includes(selectedQuery)
+                //       : false,
+                //   polyline:
+                //     selectedCoordinates !== ""
+                //       ? selectedQuery === "trajectory"
+                //       : false,
+                //   circlemarker: false,
+                // }}
                 />
                 {/* <Circle center={[51.51, -0.06]} radius={200} /> */}
                 {selectedOutput === "GeoJSON" && geojsonData && (
@@ -605,9 +698,8 @@ export default function Home() {
         </div>
       </div>
       <div
-        className={`grid grid-cols-3 gap-5 ${
-          selectedTab === "data" ? "block" : "hidden"
-        }`}
+        className={`grid grid-cols-3 gap-5 ${selectedTab === "data" ? "block" : "hidden"
+          }`}
       >
         <div className="p-3">
           <div className="my-2">
